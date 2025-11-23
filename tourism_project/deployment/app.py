@@ -96,4 +96,3 @@ if st.button("Predict"):
         st.write(f"{prediction_proba:.2%}")
     except Exception as e:
         st.error(f"Error during prediction: {e}")
-
