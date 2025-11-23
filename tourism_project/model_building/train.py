@@ -23,10 +23,10 @@ def download_csv(filename):
     return pd.read_csv(path)
 
 # Load train/test
-X_train = download_csv("X_train.csv")
-X_test  = download_csv("X_test.csv")
-y_train = download_csv("y_train.csv").values.ravel()
-y_test  = download_csv("y_test.csv").values.ravel()
+Xtrain = download_csv("Xtrain.csv")
+Xtest  = download_csv("Xtest.csv")
+ytrain = download_csv("ytrain.csv").values.ravel()
+ytest  = download_csv("ytest.csv").values.ravel()
 
 # Column definitions
 binary_cols = ['Gender', 'Passport', 'OwnCar']
@@ -48,7 +48,7 @@ preprocessor = ColumnTransformer(
 )
 
 # Handle class imbalance
-scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
+scale_pos_weight = (ytrain == 0).sum() / (ytrain == 1).sum()
 
 # XGBoost model
 xgb_model = xgb.XGBClassifier(
@@ -87,24 +87,24 @@ mlflow.set_experiment("customer_purchase_prediction1")
 
 with mlflow.start_run():
     # Train
-    grid_search.fit(X_train, y_train)
+    grid_search.fit(Xtrain, ytrain)
     best_model = grid_search.best_estimator_
 
     # Log best hyperparameters
     mlflow.log_params(grid_search.best_params_)
 
     # Log recall metrics
-    mlflow.log_metric("train_recall", recall_score(y_train, best_model.predict(X_train)))
+    mlflow.log_metric("train_recall", recall_score(ytrain, best_model.predict(Xtrain)))
 
     # Print classification reports
-    y_pred_train = best_model.predict(X_train)
-    y_pred_test  = best_model.predict(X_test)
+    y_pred_train = best_model.predict(Xtrain)
+    y_pred_test  = best_model.predict(Xtest)
 
     print("\nTraining Classification Report:")
-    print(classification_report(y_train, y_pred_train))
+    print(classification_report(ytrain, y_pred_train))
 
     print("\nTest Classification Report:")
-    print(classification_report(y_test, y_pred_test))
+    print(classification_report(ytest, y_pred_test))
 
     # Log model in MLflow
     mlflow.sklearn.log_model(best_model, "xgb_pipeline_model")
@@ -115,7 +115,7 @@ with mlflow.start_run():
     print(f"Model saved as {model_filename}")
 
 # Upload to Hugging Face
-repo_id = "ShanRaja/Customer-Purchase-Prediction"
+repo_id = "ShanRaja/Customer-Purchase-Prediction1"
 model_repo_type = "model"
 api = HfApi(token=os.getenv("HF_TOKEN"))
 
